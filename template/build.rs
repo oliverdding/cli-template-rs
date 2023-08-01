@@ -1,10 +1,13 @@
 use clap::CommandFactory;
 use clap_complete::generate_to;
 use miette::{IntoDiagnostic, Result};
+use std::fs;
 
 include!("src/cli.rs");
 
 fn main() -> Result<()> {
+    fs::create_dir("completions").into_diagnostic()?;
+
     let mut cli = Cli::command();
 
     let bin_name = cli.get_name().to_string();
