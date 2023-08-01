@@ -1,0 +1,6 @@
+[log]
+level = "info"
+
+[log.file]
+enabled = false
+path = "/tmp/template-project"

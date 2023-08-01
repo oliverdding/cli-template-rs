@@ -1,20 +1,41 @@
-mod command_line;
-mod dummy_task;
+mod cli;
+mod commands;
+mod config;
+mod log;
 
+use clap::Parser;
+use cli::{Cli, Commands};
+use commands::completion;
 use miette::Result;
 use tokio::time::Duration;
 use tokio_graceful_shutdown::Toplevel;
 
+use crate::commands::command1;
+use crate::commands::command2;
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Query command line options and initialize logging
-    let _opts = command_line::parse();
+    let cli = Cli::parse();
 
-    // Initialize and run subsystems
-    Toplevel::new()
-        .start("dummy_task", dummy_task::dummy_task)
-        .catch_signals()
-        .handle_shutdown_requests(Duration::from_millis(1000))
-        .await
-        .map_err(Into::into)
+    let global_config = config::GlobalConfig::new(&cli).await?;
+    log::configure_log(&global_config).await;
+
+    match cli.command {
+        Commands::Command1 => Toplevel::new()
+            .start("command1", command1::run)
+            .catch_signals()
+            .handle_shutdown_requests(Duration::from_millis(1000))
+            .await
+            .map_err(Into::into),
+        Commands::Command2 => Toplevel::new()
+            .start("command2", command2::run)
+            .catch_signals()
+            .handle_shutdown_requests(Duration::from_millis(1000))
+            .await
+            .map_err(Into::into),
+        Commands::Completion { shell } => {
+            completion::run(shell).await;
+            Ok(())
+        }
+    }
 }

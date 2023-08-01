@@ -1,3 +1,4 @@
+completions/
 debug/
 target/
 Cargo.lock
