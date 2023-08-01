@@ -54,7 +54,7 @@ pub enum Commands {
     Command1,
     #[command(about = "Run command2")]
     Command2,
-    #[command(about = "Generate shell completion script")]
+    #[command(about = "Generate shell completion script", disable_help_flag = true)]
     Completion {
         #[arg(
             long,
