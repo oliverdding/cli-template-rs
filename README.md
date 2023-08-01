@@ -20,7 +20,7 @@ cargo generate --init --git https://github.com/oliverdding/cli-template-rs.git
 
 - Layered configuration with config-rs
 - Command line argument parser and shell completions with clap
-- XDG support with xdg
+- XDG support with [directories](https://github.com/dirs-dev/directories-rs)
 - Logging and tracing with tracing
 - Return code error propagation with miette
 - Async runtime with graceful shutdown support with tokio

@@ -9,6 +9,11 @@ use commands::completion;
 use miette::Result;
 use tokio::time::Duration;
 use tokio_graceful_shutdown::Toplevel;
+use tracing::trace;
+use tracing::debug;
+use tracing::error;
+use tracing::info;
+use tracing::warn;
 
 use crate::commands::command1;
 use crate::commands::command2;

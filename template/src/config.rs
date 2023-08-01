@@ -1,4 +1,5 @@
 use config::{Config, Environment, File};
+use directories::ProjectDirs;
 use miette::{miette, IntoDiagnostic, Result};
 use serde::{Deserialize, Serialize};
 use std::{env, path::PathBuf};
@@ -25,9 +26,13 @@ pub struct LogFile {
 
 impl GlobalConfig {
     pub async fn new(cli: &cli::Cli) -> Result<GlobalConfig> {
-        let xdg_base = match xdg::BaseDirectories::with_prefix("template-project") {
-            Ok(v) => v,
-            Err(e) => return Err(miette!("error getting xdg directories: {}", e)), // FIXME: strange xdg Error type cannot be converted to Miette error type
+        let project_dir = match ProjectDirs::from("FIXME", "FIXME", "template-project") {
+            Some(v) => v,
+            None => {
+                return Err(miette!(
+                    "error getting configurations path following XDG base directory"
+                ))
+            } // FIXME: strange xdg Error type cannot be converted to Miette error type
         };
 
         let home_path: PathBuf =
@@ -35,7 +40,7 @@ impl GlobalConfig {
                 .clone()
                 .unwrap_or_else(|| match env::var("TEMPLATE_PROJECT_HOME") {
                     Ok(v) => PathBuf::from(v),
-                    Err(_) => xdg_base.get_config_home(),
+                    Err(_) => project_dir.config_dir().to_path_buf(),
                 });
 
         let mut config_builder = Config::builder()
@@ -43,7 +48,13 @@ impl GlobalConfig {
             .into_diagnostic()?
             .set_default("log.file.enabled", false)
             .into_diagnostic()?
-            .set_default("log.file.path", xdg_base.get_cache_home().to_str())
+            .set_default(
+                "log.file.path",
+                project_dir
+                    .cache_dir()
+                    .to_str()
+                    .ok_or(miette!("error getting cache path"))?,
+            )
             .into_diagnostic()?
             .add_source(File::with_name("/etc/cuba/config").required(false))
             .add_source(File::from(home_path.join("config")).required(false))

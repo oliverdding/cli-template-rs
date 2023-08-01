@@ -6,7 +6,7 @@ use std::fs;
 include!("src/cli.rs");
 
 fn main() -> Result<()> {
-    fs::create_dir("completions").into_diagnostic()?;
+    fs::create_dir_all("completions").into_diagnostic()?;
 
     let mut cli = Cli::command();
 
