@@ -1,12 +1,10 @@
 [package]
-# name = "{{project-name}}"
-name = "template-project"
+name = "{{project-name}}"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.56"
 build = "build.rs"
-# authors = ["{{authors}}"]
-authors = ["author-of-template-project"]
+authors = ["{{authors}}"]
 categories = ["command-line-utilities"]
 readme = "README.md"
 
@@ -31,5 +29,4 @@ clap_complete = "4.3.2"
 miette = "5.10.0"
 
 [[bin]]
-# name = "{{crate-name}}"
-name = "template-project"
+name = "{{application}}"

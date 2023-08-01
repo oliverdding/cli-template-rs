@@ -3,4 +3,4 @@ level = "info"
 
 [log.file]
 enabled = false
-path = "/tmp/template-project"
+path = "/tmp/{{crate_name}}"

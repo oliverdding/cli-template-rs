@@ -6,6 +6,10 @@ use std::{env, path::PathBuf};
 
 use crate::cli;
 
+static QUALIFIER: &str = "{{qualifier}}";
+static ORGANIZATION: &str = "{{organization}}";
+static APPLICATION: &str = "{{application}}";
+
 // default value <- global configuration file <- user configuration file <- environmen variables <- command line arguments
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GlobalConfig {
@@ -26,19 +30,19 @@ pub struct LogFile {
 
 impl GlobalConfig {
     pub async fn new(cli: &cli::Cli) -> Result<GlobalConfig> {
-        let project_dir = match ProjectDirs::from("FIXME", "FIXME", "template-project") {
+        let project_dir = match ProjectDirs::from(QUALIFIER, ORGANIZATION, APPLICATION) {
             Some(v) => v,
             None => {
                 return Err(miette!(
                     "error getting configurations path following XDG base directory"
                 ))
-            } // FIXME: strange xdg Error type cannot be converted to Miette error type
+            }
         };
 
         let home_path: PathBuf =
             cli.home
                 .clone()
-                .unwrap_or_else(|| match env::var("TEMPLATE_PROJECT_HOME") {
+                .unwrap_or_else(|| match env::var("{{ application | shouty_snake_case }}_HOME") {
                     Ok(v) => PathBuf::from(v),
                     Err(_) => project_dir.config_dir().to_path_buf(),
                 });
@@ -59,7 +63,7 @@ impl GlobalConfig {
             .add_source(File::with_name("/etc/cuba/config").required(false))
             .add_source(File::from(home_path.join("config")).required(false))
             .add_source(
-                Environment::with_prefix("TEMPLATE_PROJECT")
+                Environment::with_prefix("{{ application | shouty_snake_case }}")
                     .separator("_")
                     .ignore_empty(true),
             );
