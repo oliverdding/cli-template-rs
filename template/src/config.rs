@@ -1,5 +1,5 @@
 use config::{Config, Environment, File};
-use miette::{IntoDiagnostic, Result};
+use miette::{miette, IntoDiagnostic, Result};
 use serde::{Deserialize, Serialize};
 use std::{env, path::PathBuf};
 
@@ -27,7 +27,7 @@ impl GlobalConfig {
     pub async fn new(cli: &cli::Cli) -> Result<GlobalConfig> {
         let xdg_base = match xdg::BaseDirectories::with_prefix("template-project") {
             Ok(v) => v,
-            Err(e) => panic!("error getting xdg directories: {}", e), // FIXME: return error instead of panic
+            Err(e) => return Err(miette!("error getting xdg directories: {}", e)), // FIXME: strange xdg Error type cannot be converted to Miette error type
         };
 
         let home_path: PathBuf =
@@ -48,7 +48,7 @@ impl GlobalConfig {
             .add_source(File::with_name("/etc/cuba/config").required(false))
             .add_source(File::from(home_path.join("config")).required(false))
             .add_source(
-                Environment::with_prefix("CUBA")
+                Environment::with_prefix("TEMPLATE_PROJECT")
                     .separator("_")
                     .ignore_empty(true),
             );
