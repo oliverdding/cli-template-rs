@@ -30,3 +30,4 @@ miette = "5.10.0"
 
 [[bin]]
 name = "{{application}}"
+path = "src/main.rs"

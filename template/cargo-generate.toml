@@ -3,16 +3,16 @@ cargo_generate_version = ">=0.10.0"
 
 [placeholders.qualifier]
 type = "string"
-prompt = "[qualifier] The reverse domain name notation of the application, excluding the organization or application name itself."
+prompt = "[qualifier] The reverse domain name notation of the application, excluding the organization or application name itself (e.g. 'com.example', can be empty)"
 default = ""
 regex = '^[^s]*$'
 
 [placeholders.organization]
 type = "string"
-prompt = "[organization] The name of the organization that develops this application, or for which the application is developed."
+prompt = "[organization] The name of the organization that develops this application, or for which the application is developed (e.g. 'Github Inc.', can be empty)"
 default = ""
 
 [placeholders.application]
 type = "string"
-prompt = "[application] The name of the application itself."
+prompt = "[application] The name of the application itself (e.g. 'app')"
 regex = '^\w+$'
