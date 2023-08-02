@@ -21,6 +21,7 @@ async fn main() -> Result<()> {
     log::configure_log(&global_config).await;
 
     match cli.command {
+        // NOTE: see also https://github.com/Finomnis/tokio-graceful-shutdown/tree/main/examples
         Commands::Command1 => Toplevel::new()
             .start("command1", command1::run)
             .catch_signals()
