@@ -1,39 +1,65 @@
 use crate::config::GlobalConfig;
+use miette::Result;
 use std::str::FromStr;
 use tracing::warn;
+use tracing_appender::non_blocking::WorkerGuard;
+use tracing_log::LogTracer;
 use tracing_subscriber::filter::LevelFilter;
-use tracing_subscriber::{fmt, prelude::*};
+use tracing_subscriber::prelude::*;
 
-pub async fn configure_log(global_config: &GlobalConfig) {
+pub async fn configure_log(global_config: &GlobalConfig) -> Result<Option<WorkerGuard>> {
+    LogTracer::init().expect("failed to set logger");
+
     let mut is_fall_back = false;
 
-    let subscriber = tracing_subscriber::registry()
-        .with(
+    let stdout_subscriber = tracing_subscriber::fmt::layer()
+        .with_file(true)
+        .with_line_number(true)
+        .with_filter(
             LevelFilter::from_str(&global_config.log.level).unwrap_or_else(|_| {
                 is_fall_back = true;
                 LevelFilter::INFO
             }),
-        )
-        .with(fmt::layer().with_file(true).with_line_number(true));
-
-    if global_config.log.file.enabled {
-        let file_writer = tracing_appender::rolling::daily(
-            global_config.log.file.path.to_string(),
-            "rolling.log",
         );
 
-        subscriber
-            .with(
-                fmt::layer()
-                    .with_file(true)
-                    .with_line_number(true)
-                    .with_ansi(false)
-                    .with_writer(file_writer),
+    if !global_config.log.file.enabled {
+        let subscriber = tracing_subscriber::registry().with(stdout_subscriber);
+
+        tracing::subscriber::set_global_default(subscriber)
+            .expect("unable to set global subscriber");
+
+        if is_fall_back {
+            warn!(
+                "invalid log level '{}', fall back to info level",
+                &global_config.log.level
             )
-            .init();
-    } else {
-        subscriber.init();
+        }
+
+        return Ok(None);
     }
+
+    let file_appender =
+        tracing_appender::rolling::daily(global_config.log.file.path.to_string(), "rolling.log");
+
+    let (file_writer, guard) = tracing_appender::non_blocking(file_appender);
+
+    let file_subscriber = tracing_subscriber::fmt::layer()
+        .with_file(true)
+        .with_line_number(true)
+        .with_ansi(false)
+        .with_writer(file_writer)
+        .with_filter(
+            LevelFilter::from_str(&global_config.log.file.level).unwrap_or_else(|_| {
+                is_fall_back = true;
+                LevelFilter::INFO
+            }),
+        );
+
+    let subscriber = tracing_subscriber::registry()
+        .with(stdout_subscriber)
+        .with(file_subscriber);
+
+    tracing::subscriber::set_global_default(subscriber).expect("unable to set global subscriber");
 
     if is_fall_back {
         warn!(
@@ -41,4 +67,6 @@ pub async fn configure_log(global_config: &GlobalConfig) {
             &global_config.log.level
         )
     }
+
+    Ok(Some(guard))
 }

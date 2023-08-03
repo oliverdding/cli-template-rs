@@ -23,6 +23,9 @@ pub struct Cli {
     #[arg(long, global = true, value_name = "PATH")]
     pub log_file_path: Option<PathBuf>,
 
+    #[arg(long, global = true, value_name = "LEVEL", value_enum)]
+    pub log_file_level: Option<LogLevel>,
+
     #[command(subcommand)]
     pub command: Commands,
 }

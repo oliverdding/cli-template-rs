@@ -26,6 +26,7 @@ pub struct Log {
 pub struct LogFile {
     pub enabled: bool,
     pub path: String,
+    pub level: String,
 }
 
 impl GlobalConfig {
@@ -59,6 +60,8 @@ impl GlobalConfig {
                     .to_str()
                     .ok_or(miette!("error getting cache path"))?,
             )
+            .into_diagnostic()?
+            .set_default("log.file.level", "info")
             .into_diagnostic()?
             .add_source(File::with_name("/etc/cuba/config").required(false))
             .add_source(File::from(home_path.join("config")).required(false))

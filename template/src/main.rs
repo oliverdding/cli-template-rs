@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     let global_config = config::GlobalConfig::new(&cli).await?;
-    log::configure_log(&global_config).await;
+    let _guard = log::configure_log(&global_config).await?;
 
     match cli.command {
         // NOTE: see also https://github.com/Finomnis/tokio-graceful-shutdown/tree/main/examples
