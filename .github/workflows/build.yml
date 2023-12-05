@@ -17,10 +17,12 @@ jobs:
         uses: cargo-generate/cargo-generate-action@v0.18.5
         with:
           name: ${{ env.PROJECT_NAME }}
-          subfolder: template
-          template_values_file: .github/workflows/template_values.toml
+          template: template
+          arguments: "--define qualifier=\"com.github\" --define organization=\"Github Inc.\" application=\"app\""
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
       - name: Cargo check
         # we need to move the generated project to a temp folder, away from the template project
         # otherwise `cargo` runs would fail
