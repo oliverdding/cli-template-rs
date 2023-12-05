@@ -18,7 +18,7 @@ jobs:
         with:
           name: ${{ env.PROJECT_NAME }}
           template: template
-          arguments: "--define qualifier=\"com.github\" --define organization=\"Github Inc.\" application=\"app\""
+          arguments: "--define qualifier=\"com.github\" --define organization=\"Github Inc.\" --define application=\"app\""
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
