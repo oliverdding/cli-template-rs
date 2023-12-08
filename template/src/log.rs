@@ -1,4 +1,4 @@
-use crate::config::GlobalConfig;
+use crate::config::Log;
 use miette::Result;
 use std::str::FromStr;
 use tracing::warn;
@@ -7,7 +7,7 @@ use tracing_log::LogTracer;
 use tracing_subscriber::filter::LevelFilter;
 use tracing_subscriber::prelude::*;
 
-pub async fn configure_log(global_config: &GlobalConfig) -> Result<Option<WorkerGuard>> {
+pub async fn configure_log(log_config: &Log) -> Result<Option<WorkerGuard>> {
     LogTracer::init().expect("failed to set logger");
 
     let mut is_fall_back = false;
@@ -16,13 +16,13 @@ pub async fn configure_log(global_config: &GlobalConfig) -> Result<Option<Worker
         .with_file(true)
         .with_line_number(true)
         .with_filter(
-            LevelFilter::from_str(&global_config.log.level).unwrap_or_else(|_| {
+            LevelFilter::from_str(&log_config.level).unwrap_or_else(|_| {
                 is_fall_back = true;
                 LevelFilter::INFO
             }),
         );
 
-    if !global_config.log.file.enabled {
+    if !log_config.file.enabled {
         let subscriber = tracing_subscriber::registry().with(stdout_subscriber);
 
         tracing::subscriber::set_global_default(subscriber)
@@ -31,7 +31,7 @@ pub async fn configure_log(global_config: &GlobalConfig) -> Result<Option<Worker
         if is_fall_back {
             warn!(
                 "invalid log level '{}', fall back to info level",
-                &global_config.log.level
+                &log_config.level
             )
         }
 
@@ -39,7 +39,7 @@ pub async fn configure_log(global_config: &GlobalConfig) -> Result<Option<Worker
     }
 
     let file_appender =
-        tracing_appender::rolling::daily(global_config.log.file.path.to_string(), "rolling.log");
+        tracing_appender::rolling::daily(log_config.file.path.to_string(), "rolling.log");
 
     let (file_writer, guard) = tracing_appender::non_blocking(file_appender);
 
@@ -49,7 +49,7 @@ pub async fn configure_log(global_config: &GlobalConfig) -> Result<Option<Worker
         .with_ansi(false)
         .with_writer(file_writer)
         .with_filter(
-            LevelFilter::from_str(&global_config.log.file.level).unwrap_or_else(|_| {
+            LevelFilter::from_str(&log_config.file.level).unwrap_or_else(|_| {
                 is_fall_back = true;
                 LevelFilter::INFO
             }),
@@ -64,7 +64,7 @@ pub async fn configure_log(global_config: &GlobalConfig) -> Result<Option<Worker
     if is_fall_back {
         warn!(
             "invalid log level '{}', fall back to info level",
-            &global_config.log.level
+            &log_config.level
         )
     }
 
